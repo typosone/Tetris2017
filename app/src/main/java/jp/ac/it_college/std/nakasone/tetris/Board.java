@@ -27,6 +27,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
     private Tetromino currentTetromino;
     private MT rand = new MT(System.currentTimeMillis());
     private int inputFlag = 0x00;
+    private int dropFrames = 0;
 
     public Board(Context context, Bitmap blocks) {
         super(context);
@@ -177,6 +178,10 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void nextTetromino() {
+
+    }
+
     private void drawBoard(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
 
@@ -229,12 +234,18 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
                     continue;
                 }
 
+                if (++dropFrames % 60 == 0) {
+                    inputFlag |= 0x04;
+                }
 
                 deleteTetromino(currentTetromino);
                 move();
                 if (!putTetromino(currentTetromino)) {
                     undo();
                     putTetromino(currentTetromino);
+                    if ((inputFlag & 0x04) != 0) {
+                        nextTetromino();
+                    }
                 }
                 // フラグリセット
                 inputFlag &= ~0x0F;
