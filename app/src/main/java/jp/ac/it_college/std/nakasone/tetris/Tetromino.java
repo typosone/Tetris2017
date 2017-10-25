@@ -10,7 +10,7 @@ public class Tetromino {
             new Block(2, new int[][]{{-2, 0}, {-1, 0}, {1, 0}}), // I
             new Block(1, new int[][]{{-1, -1}, {-1, 0}, {0, -1}}), // O
             new Block(2, new int[][]{{-1, 1}, {0, 1}, {1, 0}}), // S
-            new Block(2, new int[][]{{-1, 0}, {0, -1}, {1, -1}}), // Z
+            new Block(2, new int[][]{{-1, 0}, {0, 1}, {1, 1}}), // Z
             new Block(4, new int[][]{{-1, -1}, {-1, 0}, {1, 0}}), // J
             new Block(4, new int[][]{{-1, 0}, {1, 0}, {1, -1}}), // L
             new Block(4, new int[][]{{-1, 0}, {0, -1}, {1, 0}}), // T
@@ -65,6 +65,11 @@ public class Tetromino {
 
     public void moveCounterRotate() {
         rotate--;
+    }
+
+    @Override
+    public String toString() {
+        return "Tetromino@ type:" + type + " rotate:" + rotate;
     }
 
     public static class Block {

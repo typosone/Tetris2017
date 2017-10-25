@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.ac.it_college.std.nakasone.tetris.util.MT;
@@ -28,6 +30,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
     private MT rand = new MT(System.currentTimeMillis());
     private int inputFlag = 0x00;
     private int dropFrames = 0;
+    private List<Tetromino> tetrominoQueue = new ArrayList<>();
 
     public Board(Context context, Bitmap blocks) {
         super(context);
@@ -45,11 +48,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
                     BLOCK_SIZE * (i + 1));  // bottom
         }
 
-        // debug
-        currentTetromino = new Tetromino(5, 3,
-                rand.next(1, 7),
-                rand.next(3));
-        putTetromino(currentTetromino);
+        nextTetromino();
     }
 
     public boolean putTetromino(Tetromino tetromino) {
@@ -179,7 +178,58 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void nextTetromino() {
+        if (tetrominoQueue.size() == 0) {
+            generateTetrominos();
+        }
+        currentTetromino =
+                tetrominoQueue.remove(tetrominoQueue.size() - 1);
+        putTetromino(currentTetromino);
+    }
 
+    private void generateTetrominos() {
+        for (int i = 0; i < 21; i++) {
+            tetrominoQueue.add(
+                    new Tetromino(5, 3, (i / 3) + 1, rand.next(3))
+            );
+        }
+
+        for (int s = 0; s < 10; s++) {
+            for (int a = 0; a < tetrominoQueue.size(); a++) {
+                int b = rand.next(tetrominoQueue.size() - 1);
+                Tetromino tmp = tetrominoQueue.get(a);
+                tetrominoQueue.set(a, tetrominoQueue.get(b));
+                tetrominoQueue.set(b, tmp);
+            }
+        }
+    }
+
+    private void deleteLines() {
+        for (int y = 0; y < block_list[0].length; y++) {
+            boolean lineFilled = true;
+            for (int x = 0; x < block_list.length; x++) {
+                if (block_list[x][y] == 0) {
+                    lineFilled = false;
+                    break;
+                }
+            }
+            if (lineFilled) {
+                deleteLine(y);
+            }
+        }
+    }
+
+    private void deleteLine(int y) {
+        if (y == 0) {
+            for (int x = 0; x < block_list.length; x++) {
+                block_list[x][y] = 0;
+            }
+            return;
+        }
+
+        for (int x = 0; x < block_list.length; x++) {
+            block_list[x][y] = block_list[x][y - 1];
+        }
+        deleteLine(y - 1);
     }
 
     private void drawBoard(Canvas canvas) {
@@ -244,6 +294,7 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
                     undo();
                     putTetromino(currentTetromino);
                     if ((inputFlag & 0x04) != 0) {
+                        deleteLines();
                         nextTetromino();
                     }
                 }
