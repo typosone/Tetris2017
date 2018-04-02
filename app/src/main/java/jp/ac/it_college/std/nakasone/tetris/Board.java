@@ -135,10 +135,6 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
         if ((inputFlag & 0x02) != 0) {
             currentTetromino.moveRight();
         }
-        // ドロップ押された
-        if ((inputFlag & 0x04) != 0) {
-            currentTetromino.moveBottom();
-        }
         // かいてん押された
         if ((inputFlag & 0x08) != 0) {
             currentTetromino.moveRotate();
@@ -154,14 +150,22 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
         if ((inputFlag & 0x02) != 0) {
             currentTetromino.moveLeft();
         }
-        // ドロップ押された
-        if ((inputFlag & 0x04) != 0) {
-            currentTetromino.moveTop();
-        }
         // かいてん押された
         if ((inputFlag & 0x08) != 0) {
             currentTetromino.moveCounterRotate();
         }
+    }
+
+    private boolean tetrominoDown() {
+        deleteTetromino(currentTetromino);
+        currentTetromino.moveBottom();
+        if (!putTetromino(currentTetromino)) {
+            currentTetromino.moveTop();
+            putTetromino(currentTetromino);
+            return false;
+        }
+
+        return true;
     }
 
     private void startDrawThread() {
@@ -293,11 +297,13 @@ public class Board extends SurfaceView implements SurfaceHolder.Callback {
                 if (!putTetromino(currentTetromino)) {
                     undo();
                     putTetromino(currentTetromino);
-                    if ((inputFlag & 0x04) != 0) {
-                        deleteLines();
-                        nextTetromino();
-                    }
+
                 }
+                if ((inputFlag & 0x04) != 0 && !tetrominoDown()) {
+                    deleteLines();
+                    nextTetromino();
+                }
+
                 // フラグリセット
                 inputFlag &= ~0x0F;
 
